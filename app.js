@@ -8,7 +8,10 @@ const passport = require('passport');
 const passportLocalMongoose = require('passport-local-mongoose');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
+// const TwitterStrategy = require('passport-twitter').Strategy;
 const findOrCreate = require('mongoose-findorcreate');
+
+
 
 const app = express();
 
@@ -32,6 +35,7 @@ const userSchema = new mongoose.Schema({
     password: String,
     googleId: String,
     facebookId: String,
+    // twitterId: String,
     secret: [String]
 });
 
@@ -54,7 +58,7 @@ passport.deserializeUser(function(user, cb) {
     });
 });
 
-// Google Strategy
+// <----------------- Google Strategy ------------->
 passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
@@ -68,7 +72,7 @@ passport.use(new GoogleStrategy({
   }
 ));
 
-// Facebook Strategy
+// <-------------- Facebook Strategy ------------->
 passport.use(new FacebookStrategy({
     clientID: process.env.FACEBOOK_APP_ID,
     clientSecret: process.env.FACEBOOK_APP_SECRET,
@@ -81,11 +85,31 @@ passport.use(new FacebookStrategy({
   }
 ));
 
+// <---------------- Twitter Strategy ------------>
+// passport.use(new TwitterStrategy({
+//     consumerKey: process.env.TWITTER_CLIENT_ID,
+//     consumerSecret: process.env.TWITTER_CLIENT_SECRET,
+//     callbackURL: "http://127.0.0.1:3000/auth2/twitter/secrets"
+//   },
+//   function(token, tokenSecret, profile, cb) {
+//     console.log(profile);
+//     User.findOrCreate({ twitterId: profile.id }, function (err, user) {
+//       return cb(err, user);
+//     });
+//   }
+// ));
+
+
+
+
 app.get('/', function(req, res){
     res.render('home', {title: "Anonymously"});
 });
 
-// Google Authentication
+
+
+
+// <------------ Google Authentication ------------->
 app.get('/auth/google',
     passport.authenticate('google', { scope: ['profile'] })
 );
@@ -97,16 +121,31 @@ app.get('/auth/google/secrets',
     res.redirect('/secrets');
 });
 
-// Facebook Authentication
+
+// <--------- Facebook Authentication ------------>
 app.get('/auth/facebook',
   passport.authenticate('facebook'));
 
 app.get('/auth/facebook/secrets',
   passport.authenticate('facebook', { failureRedirect: '/login' }),
   function(req, res) {
-    // Successful authentication, redirect home.
+    // Successful authentication, redirect secrets.
     res.redirect('/secrets');
-  });
+});
+
+
+// <--------- Twitter Authentication ------------>
+// app.get('/auth/twitter',
+//   passport.authenticate('twitter'));
+
+// app.get('/auth/twitter/secrets',
+//   passport.authenticate('twitter', { failureRedirect: '/login' }),
+//   function(req, res) {
+//     // Successful authentication, redirect secrets.
+//     res.redirect('/secrets');
+// });
+
+
 
 app.get('/login', function(req, res){
     res.render('login', {title: "Log in"});
